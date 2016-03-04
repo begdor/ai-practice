@@ -1,57 +1,5 @@
 import sys
 import copy
-'''
-class KB:
-	clause = []
-#MARK: 	Each clause object has:
-#			a list of premises: each premise is an instance of Atomic sentence
-#			one conclusion: a single Atomic sentence
-#		For atomic sentence, the premise is empty(null)
-#		Also, query is an instance of Clause
-class Clause:
-	premise = []
-	conclusion = Atomic()
-#MARK:	Each atomic object has:
-#		predicate as String, globally unique
-#		a list of Variable as arg
-class Atomic:
-	predicate = ''
-	arg = []
-#MARK:	Variable object has:
-#		a list of Constant(String) as domain
-class Variable:
-	domain = []
-
-def Str_to_clause(st):
-	res = Clause()
-	pre = st.split(' => ')[0]
-	con = st.split(' => ')[1]
-	# when the clause is a multiple 
-	if len(con) == 0:
-		for sentence in pre.split(' && '):
-			res.conclusion.append(Str_to_sentence(sentence))
-	# when the clause is an implication
-	else:
-		for sentence in pre.split(' && '):
-			res.premise.append(Str_to_sentence(sentence))
-		res.conclusion = toSentence(con)
-	return res
-
-def Str_to_sentence(sentence):
-	senNew = Atomic()
-	senNew.predicate = sentence.split('(')[0]
-	for arg in sentence.split('(')[1].split(','):
-		varNew = Variable()
-		if arg == arg.lower():
-			varNew.domain.append(arg)
-		senNew.arg.append(varNew)
-	arg = sentence.split('(')[1].split(')')
-	varNew = Variable()
-	if arg == arg.lower():
-		varNew.domain.append(arg)
-	senNew.arg.append(varNew)
-	return senNew
-'''
 
 class KB:
 	clauses = []
