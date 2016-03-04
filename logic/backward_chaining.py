@@ -56,7 +56,7 @@ def Str_to_sentence(sentence):
 class KB:
 	clauses = []
 
-def Str_to_clause(st):
+def Str_to_clause(st,count):
 	res = {'premise':[],'conclusion':[]}
 	pre = st.split(' => ')[0]
 	con = ''
@@ -65,21 +65,25 @@ def Str_to_clause(st):
 	# when the clause is a multiple 
 	if len(con) == 0:
 		for sentence in pre.split(' && '):
-			res['conclusion'].append(Str_to_sentence(sentence))
+			res['conclusion'].append(Str_to_sentence(sentence,count))
 	# when the clause is an implication
 	else:
 		for sentence in pre.split(' && '):
-			res['premise'].append(Str_to_sentence(sentence))
-		res['conclusion'].append(Str_to_sentence(con))
+			res['premise'].append(Str_to_sentence(sentence,count))
+		res['conclusion'].append(Str_to_sentence(con,count))
 	return res
 
-def Str_to_sentence(sentence):
+def Str_to_sentence(sentence,count):
 	res = {'arg':[]}
 	res['predicate'] = sentence.split('(')[0]
 	for arg in sentence.split('(')[1].split(','):
+		if arg == arg.lower():
+			arg += str(count)
 		res['arg'].append(arg)
 		last = arg
 	arg = last.split(')')[0]
+	if arg == arg.lower():
+		arg += str(count)
 	res['arg'][len(res['arg'])-1] = arg
 	return res
 
@@ -111,9 +115,8 @@ def Unify_var(var,x,theta):
 	print 'Inside the Unify_var'
 	if var in theta:
 		return Unify(theta[var], x, theta)
-	elif x == x.lower():
-		if x in theta:
-			return Unify(var,theta[x],theta)
+	elif x == x.lower() and x in theta:
+		return Unify(var,theta[x],theta)
 	#TODO:	add occur_check and return None
 	else:
 		thetaNew = theta.copy()
@@ -130,18 +133,19 @@ def Fetch_rules(KB,goal):
 		if len(clause['conclusion']) == 0:
 			pass
 		else:
-			for sentence in goal['conclusion']:
-				# in this homework, each conclusion only has one sentence
-				if clause['conclusion'][0]['predicate'] == sentence['predicate']:
-					if clause['conclusion'][0]['arg'] == sentence['arg']:
-						print sentence['arg']
-					res.append(clause)
+			# in this homework, int KB, each conclusion only has one sentence
+			if clause['conclusion'][0]['predicate'] == goal['predicate']:
+				if clause['conclusion'][0]['arg'] == goal['arg']:
+					print goal['arg']
+				res.append(clause)
+	print 'rule--------------'
+	print res
 	return res
 #	Backward Chaining
 #=================================================
-def Fol_bc_ask(KB,query):
+def Fol_bc_ask(KB,goal):
 	print 'Inside the Fol_bc_ask'
-	return Fol_bc_or(KB,query,{})
+	return Fol_bc_or(KB,goal,{})
 
 # travse the KB, return a list of clauses(rules) that has goal as their conclusion
 
@@ -152,54 +156,40 @@ def Fol_bc_or(KB,goal,theta):
 		lhs = rule['premise']
 		#TODO:	standardize-variables
 		# 		exclude the case that goal is multi atomic
-		if len(lhs) == 0:
-			rhs = rule['conclusion']
-			pass
-		else:
-			rhs = rule['conclusion'][0]
-			'''
-			print 'what is in this rule: rhs,goal,theta'
-			print rhs['arg']
-			print goal['conclusion'][0]['arg']
-			print Unify(rhs['arg'],goal['conclusion'][0]['arg'],theta)	
-			print '------------------'
-			'''
-			print 'and:lhs'
-			print lhs
-			for thetaR in Fol_bc_and(KB,lhs,Unify(rhs['arg'],goal['conclusion'][0]['arg'],theta)):
-				print 'thetaR'
-				print thetaR
-				yield thetaR
 
-			print 'endof and'
+		rh_list = rule['conclusion']
+		for rhs in rh_list:
+			if Unify(rhs['arg'],goal['arg'],theta) == theta:
+				yield theta
+			else: 
+				for thetaR in Fol_bc_and(KB,lhs,Unify(rhs['arg'],goal['arg'],theta)):
+					yield thetaR
 
 def Fol_bc_and(KB,goals,theta):
 	print 'Inside the Fol_bc_and'
 	if theta is None: 
 		pass
-	elif len(goals) == 0: #	if the query is single/multiple atomic sentence, lhs would be None	
+	elif len(goals) == 0: #	if the rule is an atomic sentence, lhs would be None	
 		yield theta
 	else:
 		first, rest = goals[0], goals[1:]
-		print 'first'
-		print theta
+		print '-------first-----'
+		print first
+		print '-------rest-------'
+		print rest
+		print Fol_bc_or(KB, subst(theta, first), theta)
 		for theta1 in Fol_bc_or(KB, subst(theta, first), theta):
 			for theta2 in Fol_bc_and(KB, rest, theta1):
-				print 'theta2'
-				print theta2
 				yield theta2
 
 def subst(theta, sentence):
 	print 'Inside the subst'
-	res = {'premise':[],'conclusion':[]}
-	senNew = sentence.copy()
+	sen_new = sentence.copy()
 	for arg in theta:
-		for i in range(len(senNew['arg'])):
-			if senNew['arg'][i] == arg:
-				senNew['arg'][i] = theta[arg]
-	res['conclusion'].append(senNew)
-	print res
-	return res
+		for i in range(len(sen_new['arg'])):
+			if sen_new['arg'][i] == arg:
+				sen_new['arg'][i] = theta[arg]
+	return sen_new	
 
 
 #	Read input
@@ -219,18 +209,18 @@ for line in file:
 	if count == 1:
 		num = int(line)
 		break
-	query = Str_to_clause(line)
+	query = Str_to_clause(line,count)
 	count += 1
-count = 0
 for line in file:
 	line = line.strip('\n')
-	kb.clauses.append(Str_to_clause(line))
+	kb.clauses.append(Str_to_clause(line,count))
 	count += 1
-	if count == num:
+	if count == num+1:
 		break
 
-ans = Fol_bc_ask(kb,query)
-res = []
-for a in ans:	
-	res.append(a)
-print res
+print 'start ================================================'
+for goal in query['conclusion']:
+	ans = Fol_bc_ask(kb,goal)
+	for a in ans:
+		print a
+print 'end============================================='
