@@ -102,6 +102,8 @@ def Unify(x,y,theta):
 	elif not isinstance(x,list) and y == y.lower():
 		return Unify_var(y,x,theta)
 	elif isinstance(x,list) and isinstance(y,list) and len(x) == len(y):
+		if len(x) == 0: 
+			return theta
 		return Unify(x[1:],y[1:],Unify(x[0],y[0],theta))
 	else: return None
 
@@ -131,11 +133,9 @@ def Fetch_rules(KB,goal):
 			for sentence in goal['conclusion']:
 				# in this homework, each conclusion only has one sentence
 				if clause['conclusion'][0]['predicate'] == sentence['predicate']:
-
+					if clause['conclusion'][0]['arg'] == sentence['arg']:
+						print sentence['arg']
 					res.append(clause)
-
-	print 'Rules:'
-	print res
 	return res
 #	Backward Chaining
 #=================================================
@@ -157,12 +157,21 @@ def Fol_bc_or(KB,goal,theta):
 			pass
 		else:
 			rhs = rule['conclusion'][0]
-			print Unify(rhs['arg'],goal['conclusion'][0]['arg'],theta)
-			print Fol_bc_and(KB,lhs,Unify(rhs['arg'],goal['conclusion'][0]['arg'],theta))
+			'''
+			print 'what is in this rule: rhs,goal,theta'
+			print rhs['arg']
+			print goal['conclusion'][0]['arg']
+			print Unify(rhs['arg'],goal['conclusion'][0]['arg'],theta)	
+			print '------------------'
+			'''
+			print 'and:lhs'
+			print lhs
 			for thetaR in Fol_bc_and(KB,lhs,Unify(rhs['arg'],goal['conclusion'][0]['arg'],theta)):
 				print 'thetaR'
 				print thetaR
 				yield thetaR
+
+			print 'endof and'
 
 def Fol_bc_and(KB,goals,theta):
 	print 'Inside the Fol_bc_and'
@@ -181,6 +190,7 @@ def Fol_bc_and(KB,goals,theta):
 				yield theta2
 
 def subst(theta, sentence):
+	print 'Inside the subst'
 	res = {'premise':[],'conclusion':[]}
 	senNew = sentence.copy()
 	for arg in theta:
@@ -188,6 +198,7 @@ def subst(theta, sentence):
 			if senNew['arg'][i] == arg:
 				senNew['arg'][i] = theta[arg]
 	res['conclusion'].append(senNew)
+	print res
 	return res
 
 
