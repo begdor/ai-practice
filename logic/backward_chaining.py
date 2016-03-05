@@ -83,16 +83,13 @@ def Fetch_rules(KB,goal):
 		else:
 			# in this homework, int KB, each conclusion only has one sentence
 			if clause['conclusion'][0]['predicate'] == goal['predicate']:
-				if clause['conclusion'][0]['arg'] == goal['arg']:
-					print goal['arg']
 				res.append(clause)
-	print 'rule--------------'
+	print 'rule: ',
 	print res
 	return res
 #	Backward Chaining
 #=================================================
 def Fol_bc_ask(KB,goal):
-	print 'Inside the Fol_bc_ask'
 	return Fol_bc_or(KB,goal,{})
 
 # travse the KB, return a list of clauses(rules) that has goal as their conclusion
@@ -107,10 +104,33 @@ def Fol_bc_or(KB,goal,theta):
 
 		rh_list = rule['conclusion']
 		for rhs in rh_list:
-			if Unify(rhs['arg'],goal['arg'],theta) == theta:
+			theta_uni = Unify(rhs['arg'],goal['arg'],theta)
+			#if the goal match the rule, => True + sentence
+			if theta_uni == theta:
+				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+				print theta_uni
+				string = 'True: ' + goal['predicate']+'('
+				for arg in subst(theta_uni,goal)['arg']:
+					string += arg + ','
+				str_new = string[:(len(string)-1)] + ')'
+				print str_new
+				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 				yield theta
 			else: 
-				for thetaR in Fol_bc_and(KB,lhs,Unify(rhs['arg'],goal['arg'],theta)):
+				sen_new = subst(theta_uni,goal) 
+				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+				print 'theta_uni'
+				print theta_uni
+				string = 'Ask: '+sen_new['predicate']+'('
+				for arg in sen_new['arg']:
+					if arg == arg.lower():
+						string += '_,'
+					else:
+						string += arg + ','
+				str_new = string[:(len(string)-1)] + ')'
+				print str_new
+				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+				for thetaR in Fol_bc_and(KB,lhs,theta_uni):
 					yield thetaR
 
 def Fol_bc_and(KB,goals,theta):
@@ -121,11 +141,21 @@ def Fol_bc_and(KB,goals,theta):
 		yield theta
 	else:
 		first, rest = goals[0], goals[1:]
-		print '-------first-----'
+		print '-------first-----',
 		print first
-		print '-------rest-------'
+		print '-------rest-------',
 		print rest
-		print Fol_bc_or(KB, subst(theta, first), theta)
+		'''
+		#if the rule is an implication, => True is all the lhs is verified
+		sen_new = subst(theta,first) 
+		string = 'True: '+sen_new['predicate']+'('
+		for arg in subst(theta,goal)['arg']:
+			if arg == arg.lower():
+				string += '_,'
+			else:
+				string += arg + ','
+		str_new = string[:(len(string)-1)] + ')'
+		print str_new '''
 		for theta1 in Fol_bc_or(KB, subst(theta, first), theta):
 			for theta2 in Fol_bc_and(KB, rest, theta1):
 				yield theta2
@@ -137,6 +167,8 @@ def subst(theta, sentence):
 		for i in range(len(sen_new['arg'])):
 			if sen_new['arg'][i] == arg:
 				sen_new['arg'][i] = theta[arg]
+	print 'senNew',
+	print sen_new	
 	return sen_new	
 
 
@@ -170,5 +202,5 @@ print 'start ================================================'
 for goal in query['conclusion']:
 	ans = Fol_bc_ask(kb,goal)
 	for a in ans:
-		print a
+		pass
 print 'end============================================='
