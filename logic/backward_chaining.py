@@ -95,6 +95,18 @@ def Fol_bc_ask(KB,goal):
 
 def Fol_bc_or(KB,goal,theta):
 	print 'Inside the Fol_bc_or'
+
+	senNew = subst(theta,goal) 
+	
+	string = 'Ask: '+senNew['predicate']+'('
+	for arg in senNew['arg']:
+		if arg == arg.lower():
+			string += '_,'
+		else:
+			string += arg + ','
+	strAsk = string[:(len(string)-1)] + ')'
+
+	rules = []
 	for rule in Fetch_rules(KB,goal):
 		lhs = rule['premise']
 		rh_list = rule['conclusion']
@@ -104,49 +116,51 @@ def Fol_bc_or(KB,goal,theta):
 		for rhs in rh_list:
 			thetaUni = Unify(rhs['arg'],goal['arg'],theta)
 			#if the goal match the rule, => True + sentence
-
-			senNew = subst(theta,goal) 
-
-
-			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-			string = 'Ask: '+senNew['predicate']+'('
-			for arg in senNew['arg']:
-				if arg == arg.lower():
-					string += '_,'
-				else:
-					string += arg + ','
-			strNew = string[:(len(string)-1)] + ')'
-			print strNew
-			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-
-
 			if thetaUni is None:
-				string = 'False: ' + senNew['predicate']+'('
-				for arg in senNew['arg']:
-					string += arg + ','
-				strNew = string[:(len(string)-1)] + ')'
-				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-				print strNew
-				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 				pass
 			else:
-				for thetaR in Fol_bc_and(KB,lhs,thetaUni):
-					string = 'True: ' + goal['predicate']+'('
-					for arg in subst(thetaR,goal)['arg']:
-						string += arg + ','
-					strNew = string[:(len(string)-1)] + ')'
-					print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-					print strNew
-					print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-					if query['conclusion'][0]['predicate'] == goal['predicate']:
-						whether = True
-						for i in range(0,len(goal['arg'])):
-							each = goal['arg'][i]
-							whether = whether and each != each.lower() and query['conclusion'][0]['arg'][i] == each
-						if whether:
-							print 'True'
-							raise StopIteration
-					yield thetaR
+				rules.append(rule)
+	if len(rules) == 0:
+
+
+		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+		print strAsk
+		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+
+		string = 'False: ' + senNew['predicate']+'('
+		for arg in senNew['arg']:
+			string += arg + ','
+		strFal = string[:(len(string)-1)] + ')'
+		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+		print strFal
+		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+	for rule in rules:
+		lhs = rule['premise']
+		rh_list = rule['conclusion']
+		for rhs in rh_list:
+			thetaUni = Unify(rhs['arg'],goal['arg'],theta)
+
+			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+			print strAsk
+			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+			for thetaR in Fol_bc_and(KB,lhs,thetaUni):
+
+				string = 'True: ' + goal['predicate']+'('
+				for arg in subst(thetaR,goal)['arg']:
+					string += arg + ','
+				strTrue = string[:(len(string)-1)] + ')'
+				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+				print strTrue
+				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+				if query['conclusion'][0]['predicate'] == goal['predicate']:
+					whether = True
+					for i in range(0,len(goal['arg'])):
+						each = goal['arg'][i]
+						whether = whether and each != each.lower() and query['conclusion'][0]['arg'][i] == each
+					if whether:
+						print 'True'
+						raise StopIteration
+				yield thetaR
 				
 
 def Fol_bc_and(KB,goals,theta):
