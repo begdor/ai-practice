@@ -138,6 +138,9 @@ def Fol_bc_or(KB,goal,theta):
 					print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 					print strNew
 					print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+					if query['conclusion'][0]['predicate'] == goal['predicate']:
+						print 'True'
+						raise StopIteration
 					yield thetaR
 				
 
@@ -152,9 +155,6 @@ def Fol_bc_and(KB,goals,theta):
 		first, rest = goals[0], goals[1:]
 
 		senNew = subst(theta, first)
-		print first
-		print theta
-		print senNew
 		for theta1 in Fol_bc_or(KB, senNew, theta):
 			for theta2 in Fol_bc_and(KB, rest, theta1):
 				yield theta2
