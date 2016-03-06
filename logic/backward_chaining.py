@@ -139,8 +139,13 @@ def Fol_bc_or(KB,goal,theta):
 					print strNew
 					print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 					if query['conclusion'][0]['predicate'] == goal['predicate']:
-						print 'True'
-						raise StopIteration
+						whether = True
+						for i in range(0,len(goal['arg'])):
+							each = goal['arg'][i]
+							whether = whether and each != each.lower() and query['conclusion'][0]['arg'][i] == each
+						if whether:
+							print 'True'
+							raise StopIteration
 					yield thetaR
 				
 
