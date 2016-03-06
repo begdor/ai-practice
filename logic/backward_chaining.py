@@ -24,7 +24,7 @@ def Str_to_clause(st,count):
 def Str_to_sentence(sentence,count):
 	res = {'arg':[]}
 	res['predicate'] = sentence.split('(')[0]
-	for arg in sentence.split('(')[1].split(','):
+	for arg in sentence.split('(')[1].split(', '):
 		if arg == arg.lower():
 			arg += str(count)
 		res['arg'].append(arg)
@@ -99,44 +99,56 @@ def Fol_bc_or(KB,goal,theta):
 	print 'Inside the Fol_bc_or'
 	for rule in Fetch_rules(KB,goal):
 		lhs = rule['premise']
+		rh_list = rule['conclusion']
 		#TODO:	standardize-variables
 		# 		exclude the case that goal is multi atomic
 
-		rh_list = rule['conclusion']
 		for rhs in rh_list:
-			theta_uni = Unify(rhs['arg'],goal['arg'],theta)
+			thetaUni = Unify(rhs['arg'],goal['arg'],theta)
 			#if the goal match the rule, => True + sentence
-			if theta_uni == theta:
-				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-				print theta_uni
-				string = 'True: ' + goal['predicate']+'('
-				for arg in subst(theta_uni,goal)['arg']:
+			print 'theta',
+			print theta
+			print 'thetaUni',
+			print thetaUni
+			senNew = subst(theta,goal) 
+			print 'goal',
+			print goal
+			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+			string = 'Ask: '+senNew['predicate']+'('
+			for arg in senNew['arg']:
+				if arg == arg.lower():
+					string += '_,'
+				else:
 					string += arg + ','
-				str_new = string[:(len(string)-1)] + ')'
-				print str_new
-				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-				yield theta
-			else: 
-				sen_new = subst(theta_uni,goal) 
-				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-				print 'theta_uni'
-				print theta_uni
-				string = 'Ask: '+sen_new['predicate']+'('
-				for arg in sen_new['arg']:
-					if arg == arg.lower():
-						string += '_,'
-					else:
+			strNew = string[:(len(string)-1)] + ')'
+			print strNew
+			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+			for thetaR in Fol_bc_and(KB,lhs,thetaUni):
+				if thetaR is None:
+					string = 'False: ' + goal['predicate']+'('
+					for arg in subst(thetaR,goal)['arg']:
 						string += arg + ','
-				str_new = string[:(len(string)-1)] + ')'
-				print str_new
-				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-				for thetaR in Fol_bc_and(KB,lhs,theta_uni):
+					strNew = string[:(len(string)-1)] + ')'
+					print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+					print strNew
+					print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+					#yield thetaUni
+				else:
+					string = 'True: ' + goal['predicate']+'('
+					for arg in subst(thetaR,goal)['arg']:
+						string += arg + ','
+					strNew = string[:(len(string)-1)] + ')'
+					print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+					print strNew
+					print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 					yield thetaR
 
 def Fol_bc_and(KB,goals,theta):
 	print 'Inside the Fol_bc_and'
+	print 'theta',
+	print theta
 	if theta is None: 
-		pass
+		yield None
 	elif len(goals) == 0: #	if the rule is an atomic sentence, lhs would be None	
 		yield theta
 	else:
@@ -145,31 +157,25 @@ def Fol_bc_and(KB,goals,theta):
 		print first
 		print '-------rest-------',
 		print rest
-		'''
-		#if the rule is an implication, => True is all the lhs is verified
-		sen_new = subst(theta,first) 
-		string = 'True: '+sen_new['predicate']+'('
-		for arg in subst(theta,goal)['arg']:
-			if arg == arg.lower():
-				string += '_,'
-			else:
-				string += arg + ','
-		str_new = string[:(len(string)-1)] + ')'
-		print str_new '''
-		for theta1 in Fol_bc_or(KB, subst(theta, first), theta):
+		senNew = subst(theta, first)
+		print senNew
+		for theta1 in Fol_bc_or(KB, senNew, theta):
 			for theta2 in Fol_bc_and(KB, rest, theta1):
 				yield theta2
 
 def subst(theta, sentence):
 	print 'Inside the subst'
-	sen_new = sentence.copy()
+	senNew = sentence.copy()
+	if theta is None:
+		return senNew
+	print senNew
 	for arg in theta:
-		for i in range(len(sen_new['arg'])):
-			if sen_new['arg'][i] == arg:
-				sen_new['arg'][i] = theta[arg]
+		for i in range(0,len(senNew['arg'])):
+			if senNew['arg'][i] == arg:
+				senNew['arg'][i] = theta[arg]
 	print 'senNew',
-	print sen_new	
-	return sen_new	
+	print senNew	
+	return senNew	
 
 
 #	Read input
