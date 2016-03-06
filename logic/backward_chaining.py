@@ -84,8 +84,6 @@ def Fetch_rules(KB,goal):
 			# in this homework, int KB, each conclusion only has one sentence
 			if clause['conclusion'][0]['predicate'] == goal['predicate']:
 				res.append(clause)
-	print 'rule: ',
-	print res
 	return res
 #	Backward Chaining
 #=================================================
@@ -106,13 +104,10 @@ def Fol_bc_or(KB,goal,theta):
 		for rhs in rh_list:
 			thetaUni = Unify(rhs['arg'],goal['arg'],theta)
 			#if the goal match the rule, => True + sentence
-			print 'theta',
-			print theta
-			print 'thetaUni',
-			print thetaUni
+
 			senNew = subst(theta,goal) 
-			print 'goal',
-			print goal
+
+
 			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 			string = 'Ask: '+senNew['predicate']+'('
 			for arg in senNew['arg']:
@@ -123,17 +118,19 @@ def Fol_bc_or(KB,goal,theta):
 			strNew = string[:(len(string)-1)] + ')'
 			print strNew
 			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-			for thetaR in Fol_bc_and(KB,lhs,thetaUni):
-				if thetaR is None:
-					string = 'False: ' + goal['predicate']+'('
-					for arg in subst(thetaR,goal)['arg']:
-						string += arg + ','
-					strNew = string[:(len(string)-1)] + ')'
-					print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-					print strNew
-					print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-					#yield thetaUni
-				else:
+
+
+			if thetaUni is None:
+				string = 'False: ' + senNew['predicate']+'('
+				for arg in senNew['arg']:
+					string += arg + ','
+				strNew = string[:(len(string)-1)] + ')'
+				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+				print strNew
+				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+				pass
+			else:
+				for thetaR in Fol_bc_and(KB,lhs,thetaUni):
 					string = 'True: ' + goal['predicate']+'('
 					for arg in subst(thetaR,goal)['arg']:
 						string += arg + ','
@@ -142,22 +139,21 @@ def Fol_bc_or(KB,goal,theta):
 					print strNew
 					print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 					yield thetaR
+				
 
 def Fol_bc_and(KB,goals,theta):
 	print 'Inside the Fol_bc_and'
-	print 'theta',
-	print theta
 	if theta is None: 
-		yield None
+		pass
+		#yield None
 	elif len(goals) == 0: #	if the rule is an atomic sentence, lhs would be None	
 		yield theta
 	else:
 		first, rest = goals[0], goals[1:]
-		print '-------first-----',
-		print first
-		print '-------rest-------',
-		print rest
+
 		senNew = subst(theta, first)
+		print first
+		print theta
 		print senNew
 		for theta1 in Fol_bc_or(KB, senNew, theta):
 			for theta2 in Fol_bc_and(KB, rest, theta1):
@@ -165,16 +161,13 @@ def Fol_bc_and(KB,goals,theta):
 
 def subst(theta, sentence):
 	print 'Inside the subst'
-	senNew = sentence.copy()
+	senNew = copy.deepcopy(sentence)
 	if theta is None:
 		return senNew
-	print senNew
 	for arg in theta:
 		for i in range(0,len(senNew['arg'])):
 			if senNew['arg'][i] == arg:
 				senNew['arg'][i] = theta[arg]
-	print 'senNew',
-	print senNew	
 	return senNew	
 
 
