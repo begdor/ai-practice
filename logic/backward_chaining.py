@@ -102,8 +102,18 @@ def Standardize(rule):
 
 #	Backward Chaining
 #=================================================
-def Fol_bc_ask(KB,goal):
-	return Fol_bc_or(KB,goal,{})
+def Fol_bc_ask(KB,query):
+	print 'inside Fol_bc_ask'
+	for theta in Fol_bc_or(kb, query, {}):
+		if theta is None:
+			string = 'False: ' + query['predicate']+'('
+			for arg in query['arg']:
+				string += arg + ', '
+			strFal = string[:(len(string)-2)] + ')'
+			output.write(strFal)
+			output.write('\n')
+			return False
+	return True
 
 # travse the KB, return a list of clauses(rules) that has goal as their conclusion
 
@@ -184,12 +194,17 @@ def Fol_bc_or(KB,goal,theta):
 								each = goal['arg'][j]
 								isTrue = isTrue and each != each.lower() and query['conclusion'][i]['arg'][j] == each
 						if isTrue:
+							'''
 							print 'True'
 							output.write('True')
 							output.write('\n')
-							raise StopIteration
+							'''
+							return
+							#raise StopIteration
+							
 							
 				yield thetaR
+	yield None
 				
 
 def Fol_bc_and(KB,goals,theta):
@@ -217,6 +232,11 @@ def subst(theta, sentence):
 				senNew['arg'][i] = theta[arg]
 	return senNew	
 
+def kb_ask(kb, query_list):
+	for query in query_list:
+   		if not Fol_bc_ask(kb, query):
+   			return False
+	return True
 
 #	Read input
 #=================================================
@@ -246,10 +266,7 @@ for line in file:
 standCount = 'a'
 output = open('./output.txt','w')
 print 'start ================================================'
-for goal in query['conclusion']:
-	ans = Fol_bc_ask(kb,goal)
-	for a in ans:
-		pass
+output.write(str(kb_ask(kb,query['conclusion'])))
 
 output.close()
 print 'end============================================='
