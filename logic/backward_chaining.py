@@ -101,10 +101,10 @@ def Fol_bc_or(KB,goal,theta):
 	string = 'Ask: '+senNew['predicate']+'('
 	for arg in senNew['arg']:
 		if arg == arg.lower():
-			string += '_,'
+			string += '_, '
 		else:
-			string += arg + ','
-	strAsk = string[:(len(string)-1)] + ')'
+			string += arg + ', '
+	strAsk = string[:(len(string)-2)] + ')'
 
 	rules = []
 	for rule in Fetch_rules(KB,goal):
@@ -125,14 +125,18 @@ def Fol_bc_or(KB,goal,theta):
 
 		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 		print strAsk
+		output.write(strAsk)
+		output.write('\n')
 		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 
 		string = 'False: ' + senNew['predicate']+'('
 		for arg in senNew['arg']:
-			string += arg + ','
-		strFal = string[:(len(string)-1)] + ')'
+			string += arg + ', '
+		strFal = string[:(len(string)-2)] + ')'
 		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 		print strFal
+		output.write(strFal)
+		output.write('\n')
 		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 	for rule in rules:
 		lhs = rule['premise']
@@ -142,23 +146,32 @@ def Fol_bc_or(KB,goal,theta):
 
 			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 			print strAsk
+			output.write(strAsk)
+			output.write('\n')
 			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 			for thetaR in Fol_bc_and(KB,lhs,thetaUni):
 
 				string = 'True: ' + goal['predicate']+'('
 				for arg in subst(thetaR,goal)['arg']:
-					string += arg + ','
-				strTrue = string[:(len(string)-1)] + ')'
+					string += arg + ', '
+				strTrue = string[:(len(string)-2)] + ')'
 				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 				print strTrue
+				output.write(strTrue)
+				output.write('\n')
 				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 				if query['conclusion'][0]['predicate'] == goal['predicate']:
 					whether = True
 					for i in range(0,len(goal['arg'])):
-						each = goal['arg'][i]
-						whether = whether and each != each.lower() and query['conclusion'][0]['arg'][i] == each
+						if query['conclusion'][0]['arg'][i] == query['conclusion'][0]['arg'][i].lower():
+							continue
+						else:
+							each = goal['arg'][i]
+							whether = whether and each != each.lower() and query['conclusion'][0]['arg'][i] == each
 					if whether:
 						print 'True'
+						output.write('True')
+						output.write('\n')
 						raise StopIteration
 				yield thetaR
 				
@@ -216,9 +229,12 @@ for line in file:
 	if count == num+1:
 		break
 
+output = open('./output.txt','w')
 print 'start ================================================'
 for goal in query['conclusion']:
 	ans = Fol_bc_ask(kb,goal)
 	for a in ans:
 		pass
+
+output.close()
 print 'end============================================='
