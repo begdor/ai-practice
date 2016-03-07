@@ -106,12 +106,7 @@ def Fol_bc_ask(KB,query):
 	print 'inside Fol_bc_ask'
 	for theta in Fol_bc_or(kb, query, {}):
 		if theta is None:
-			string = 'False: ' + query['predicate']+'('
-			for arg in query['arg']:
-				string += arg + ', '
-			strFal = string[:(len(string)-2)] + ')'
-			output.write(strFal)
-			output.write('\n')
+			
 			return False
 	return True
 
@@ -163,6 +158,7 @@ def Fol_bc_or(KB,goal,theta):
 		output.write(strFal)
 		output.write('\n')
 		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+	flag = True
 	for rule in rules:
 		lhs = rule['premise']
 		rh_list = rule['conclusion']
@@ -174,7 +170,7 @@ def Fol_bc_or(KB,goal,theta):
 			output.write('\n')
 			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 			for thetaR in Fol_bc_and(KB,lhs,thetaUni):
-
+				flag = False
 				string = 'True: ' + goal['predicate']+'('
 				for arg in subst(thetaR,goal)['arg']:
 					string += arg + ', '
@@ -204,6 +200,13 @@ def Fol_bc_or(KB,goal,theta):
 							
 							
 				yield thetaR
+	if len(rules) != 0 and flag:
+		string = 'False: ' + senNew['predicate']+'('
+		for arg in senNew['arg']:
+			string += arg + ', '
+		strFal = string[:(len(string)-2)] + ')'
+		print strFal
+		output.write(strFal+'\n')
 	yield None
 				
 
