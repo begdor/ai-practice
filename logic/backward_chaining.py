@@ -85,6 +85,21 @@ def Fetch_rules(KB,goal):
 			if clause['conclusion'][0]['predicate'] == goal['predicate']:
 				res.append(clause)
 	return res
+
+def Standardize(rule):
+	global standCount
+	ruleNew = copy.deepcopy(rule)
+	for i in range(0,len(ruleNew['premise'])):
+		for j in range(0,len(ruleNew['premise'][i]['arg'])):
+			if ruleNew['premise'][i]['arg'][j] == ruleNew['premise'][i]['arg'][j].lower():
+				ruleNew['premise'][i]['arg'][j] += standCount
+	for i in range(0,len(ruleNew['conclusion'])):
+		for j in range(0,len(ruleNew['conclusion'][i]['arg'])):
+			if ruleNew['conclusion'][i]['arg'][j] == ruleNew['conclusion'][i]['arg'][j].lower():
+				ruleNew['conclusion'][i]['arg'][j] += standCount
+	standCount = chr(ord(standCount)+1)
+	return ruleNew
+
 #	Backward Chaining
 #=================================================
 def Fol_bc_ask(KB,goal):
@@ -95,7 +110,6 @@ def Fol_bc_ask(KB,goal):
 
 def Fol_bc_or(KB,goal,theta):
 	print 'Inside the Fol_bc_or'
-
 	senNew = subst(theta,goal) 
 	
 	string = 'Ask: '+senNew['predicate']+'('
@@ -108,8 +122,9 @@ def Fol_bc_or(KB,goal,theta):
 
 	rules = []
 	for rule in Fetch_rules(KB,goal):
-		lhs = rule['premise']
-		rh_list = rule['conclusion']
+		ruleNew = Standardize(rule)
+		lhs = ruleNew['premise']
+		rh_list = ruleNew['conclusion']
 		#TODO:	standardize-variables
 		# 		exclude the case that goal is multi atomic
 
@@ -119,7 +134,7 @@ def Fol_bc_or(KB,goal,theta):
 			if thetaUni is None:
 				pass
 			else:
-				rules.append(rule)
+				rules.append(ruleNew)
 	if len(rules) == 0:
 
 
@@ -143,7 +158,6 @@ def Fol_bc_or(KB,goal,theta):
 		rh_list = rule['conclusion']
 		for rhs in rh_list:
 			thetaUni = Unify(rhs['arg'],goal['arg'],theta)
-
 			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 			print strAsk
 			output.write(strAsk)
@@ -160,27 +174,28 @@ def Fol_bc_or(KB,goal,theta):
 				output.write(strTrue)
 				output.write('\n')
 				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-				if query['conclusion'][0]['predicate'] == goal['predicate']:
-					whether = True
-					for i in range(0,len(goal['arg'])):
-						if query['conclusion'][0]['arg'][i] == query['conclusion'][0]['arg'][i].lower():
-							continue
-						else:
-							each = goal['arg'][i]
-							whether = whether and each != each.lower() and query['conclusion'][0]['arg'][i] == each
-					if whether:
-						print 'True'
-						output.write('True')
-						output.write('\n')
-						raise StopIteration
+				for i in range(0,len(query['conclusion'])):
+					if query['conclusion'][i]['predicate'] == goal['predicate']:
+						isTrue = True
+						for j in range(0,len(goal['arg'])):
+							if query['conclusion'][i]['arg'][j] == query['conclusion'][i]['arg'][j].lower():
+								continue
+							else:
+								each = goal['arg'][j]
+								isTrue = isTrue and each != each.lower() and query['conclusion'][i]['arg'][j] == each
+						if isTrue:
+							print 'True'
+							output.write('True')
+							output.write('\n')
+							raise StopIteration
+							
 				yield thetaR
 				
 
 def Fol_bc_and(KB,goals,theta):
 	print 'Inside the Fol_bc_and'
 	if theta is None: 
-		pass
-		#yield None
+		return
 	elif len(goals) == 0: #	if the rule is an atomic sentence, lhs would be None	
 		yield theta
 	else:
@@ -228,7 +243,7 @@ for line in file:
 	count += 1
 	if count == num+1:
 		break
-
+standCount = 'a'
 output = open('./output.txt','w')
 print 'start ================================================'
 for goal in query['conclusion']:
