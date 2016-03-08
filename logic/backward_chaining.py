@@ -92,12 +92,12 @@ def Standardize(rule):
 	for i in range(0,len(ruleNew['premise'])):
 		for j in range(0,len(ruleNew['premise'][i]['arg'])):
 			if ruleNew['premise'][i]['arg'][j] == ruleNew['premise'][i]['arg'][j].lower():
-				ruleNew['premise'][i]['arg'][j] += standCount
+				ruleNew['premise'][i]['arg'][j] += 'std'+ str(standCount)
 	for i in range(0,len(ruleNew['conclusion'])):
 		for j in range(0,len(ruleNew['conclusion'][i]['arg'])):
 			if ruleNew['conclusion'][i]['arg'][j] == ruleNew['conclusion'][i]['arg'][j].lower():
-				ruleNew['conclusion'][i]['arg'][j] += standCount
-	standCount = chr(ord(standCount)+1)
+				ruleNew['conclusion'][i]['arg'][j] += 'std' + str(standCount)
+	standCount += 1
 	return ruleNew
 
 #	Backward Chaining
@@ -260,7 +260,7 @@ for line in file:
 	count += 1
 	if count == num+1:
 		break
-standCount = 'a'
+standCount = 0
 output = open('./output.txt','w')
 output.write(str(kb_ask(kb,query['conclusion'])))
 
