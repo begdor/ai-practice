@@ -44,7 +44,7 @@ def Str_to_sentence(sentence,count):
 #	3) single predicate with one unknown variable
 #	only the case 3) need to call Unify(), so that in Unify() we don't need to consider compund
 def Unify(x,y,theta):
-	print 'Inside the Unify'
+
 	if theta is None:
 		return None
 	elif x == y:
@@ -60,7 +60,7 @@ def Unify(x,y,theta):
 	else: return None
 
 def Unify_var(var,x,theta):
-	print 'Inside the Unify_var'
+
 	if var in theta:
 		return Unify(theta[var], x, theta)
 	elif x == x.lower() and x in theta:
@@ -75,7 +75,7 @@ def Unify_var(var,x,theta):
 #	Fetch rule for goals
 #=================================================
 def Fetch_rules(KB,goal):
-	print 'Inside the Fetch_rules'
+
 	res = []
 	for clause in KB.clauses:
 		if len(clause['conclusion']) == 0:
@@ -103,7 +103,7 @@ def Standardize(rule):
 #	Backward Chaining
 #=================================================
 def Fol_bc_ask(KB,query):
-	print 'inside Fol_bc_ask'
+
 	for theta in Fol_bc_or(kb, query, {}):
 		if theta is None:
 			
@@ -114,7 +114,7 @@ def Fol_bc_ask(KB,query):
 
 
 def Fol_bc_or(KB,goal,theta):
-	print 'Inside the Fol_bc_or'
+
 	senNew = subst(theta,goal) 
 	
 	string = 'Ask: '+senNew['predicate']+'('
@@ -143,43 +143,43 @@ def Fol_bc_or(KB,goal,theta):
 	if len(rules) == 0:
 
 
-		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+	
 		print strAsk
 		output.write(strAsk)
 		output.write('\n')
-		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+	
 
 		string = 'False: ' + senNew['predicate']+'('
 		for arg in senNew['arg']:
 			string += arg + ', '
 		strFal = string[:(len(string)-2)] + ')'
-		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+	
 		print strFal
 		output.write(strFal)
 		output.write('\n')
-		print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+	
 	flag = True
 	for rule in rules:
 		lhs = rule['premise']
 		rh_list = rule['conclusion']
 		for rhs in rh_list:
 			thetaUni = Unify(rhs['arg'],goal['arg'],theta)
-			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+		
 			print strAsk
 			output.write(strAsk)
 			output.write('\n')
-			print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+		
 			for thetaR in Fol_bc_and(KB,lhs,thetaUni):
 				flag = False
 				string = 'True: ' + goal['predicate']+'('
 				for arg in subst(thetaR,goal)['arg']:
 					string += arg + ', '
 				strTrue = string[:(len(string)-2)] + ')'
-				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+			
 				print strTrue
 				output.write(strTrue)
 				output.write('\n')
-				print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+			
 				for i in range(0,len(query['conclusion'])):
 					if query['conclusion'][i]['predicate'] == goal['predicate']:
 						isTrue = True
@@ -190,13 +190,7 @@ def Fol_bc_or(KB,goal,theta):
 								each = goal['arg'][j]
 								isTrue = isTrue and each != each.lower() and query['conclusion'][i]['arg'][j] == each
 						if isTrue:
-							'''
-							print 'True'
-							output.write('True')
-							output.write('\n')
-							'''
 							return
-							#raise StopIteration
 							
 							
 				yield thetaR
@@ -211,7 +205,7 @@ def Fol_bc_or(KB,goal,theta):
 				
 
 def Fol_bc_and(KB,goals,theta):
-	print 'Inside the Fol_bc_and'
+
 	if theta is None: 
 		return
 	elif len(goals) == 0: #	if the rule is an atomic sentence, lhs would be None	
@@ -225,7 +219,7 @@ def Fol_bc_and(KB,goals,theta):
 				yield theta2
 
 def subst(theta, sentence):
-	print 'Inside the subst'
+
 	senNew = copy.deepcopy(sentence)
 	if theta is None:
 		return senNew
@@ -268,8 +262,6 @@ for line in file:
 		break
 standCount = 'a'
 output = open('./output.txt','w')
-print 'start ================================================'
 output.write(str(kb_ask(kb,query['conclusion'])))
 
 output.close()
-print 'end============================================='
