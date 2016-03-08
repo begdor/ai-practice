@@ -151,7 +151,10 @@ def Fol_bc_or(KB,goal,theta):
 
 		string = 'False: ' + senNew['predicate']+'('
 		for arg in senNew['arg']:
-			string += arg + ', '
+			if arg == arg.lower():
+				string += '_, '
+			else:
+				string += arg + ', '
 		strFal = string[:(len(string)-2)] + ')'
 	
 		print strFal
@@ -173,7 +176,10 @@ def Fol_bc_or(KB,goal,theta):
 				flag = False
 				string = 'True: ' + goal['predicate']+'('
 				for arg in subst(thetaR,goal)['arg']:
-					string += arg + ', '
+					if arg == arg.lower():
+						string += '_, '
+					else:
+						string += arg + ', '
 				strTrue = string[:(len(string)-2)] + ')'
 			
 				print strTrue
@@ -197,7 +203,10 @@ def Fol_bc_or(KB,goal,theta):
 	if len(rules) != 0 and flag:
 		string = 'False: ' + senNew['predicate']+'('
 		for arg in senNew['arg']:
-			string += arg + ', '
+			if arg == arg.lower():
+				string += '_, '
+			else:
+				string += arg + ', '
 		strFal = string[:(len(string)-2)] + ')'
 		print strFal
 		output.write(strFal+'\n')
